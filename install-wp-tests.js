@@ -130,6 +130,37 @@ const installDatabase = async () => {
 	connection.end();
 };
 
+const installTestSuite = async () => {
+	if ( ! fs.existsSync( wpTestsDir ) ) {
+		await fs.promises.mkdir( wpTestsDir, { recursive: true } );
+
+		const Client = require( 'svn-spawn' );
+		const client = new Client( { cwd: wpTestsDir } );
+		const handleError = ( err ) => {
+			if ( err ) {
+				throw ( err );
+			}
+		};
+
+		client.cmd( [ 'co', '--quiet', '--ignore-externals', `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/includes/`, `${ wpTestsDir }/includes` ], ( err ) => handleError( err ) );
+
+		client.cmd( [ 'co', '--quiet', '--ignore-externals', `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/data/`, `${ wpTestsDir }/data` ], ( err ) => handleError( err ) );
+	}
+};
+
+// 	if [ ! -f wp-tests-config.php ]; then
+// 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
+// 		# remove all forward slashes in the end
+// 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
+// 		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
+// 		sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR"/wp-tests-config.php
+// 		sed $ioption "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR"/wp-tests-config.php
+// 		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
+// 		sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
+// 	fi
+
+// }
+
 const syncLatestData = async () => {
 	await util.download( 'http://api.wordpress.org/core/version-check/1.7/', `/tmp/wp-latest.json` );
 	const wpLatestData = fs.readFileSync( '/tmp/wp-latest.json', 'utf8' );
@@ -139,5 +170,6 @@ const syncLatestData = async () => {
 ( async () => {
 	await syncLatestData();
 	// await installWordPress();
-	await installDatabase();
+	// await installDatabase();
+	await installTestSuite();
 } )();
