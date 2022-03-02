@@ -1,0 +1,22 @@
+{
+  "name": "@godaddy-wordpress/development-scripts",
+  "version": "0.1.0",
+  "description": "Collection of scripts used for management of CI pipelines as well as general development scripts.",
+  "main": "./",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "GoDaddy",
+  "license": "ISC",
+  "dependencies": {
+    "@wordpress/eslint-plugin": "^10.0.2",
+    "adm-zip": "^0.5.9",
+    "eslint-plugin-node": "^11.1.0",
+    "node-fetch": "^3.2.1",
+    "node-libcurl": "^2.3.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.10.0",
+    "eslint-plugin-import": "^2.25.4"
+  }
+}
