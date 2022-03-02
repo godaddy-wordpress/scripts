@@ -17,18 +17,14 @@ let wpTestsTag;
 
 const fs = require( 'fs' );
 const os = require( 'os' );
-// const path = require('path');
-const { Curl } = require( 'node-libcurl' );
 const util = require( './utils' );
-
-// console.log(os.tmpdir());
 const tmpDir = fs.mkdtempSync( os.tmpdir() );
 
 const wpTestsDir = `${ tmpDir }/wordpress-tests-lib`;
 const wpCoreDir = `${ tmpDir }/wordpress/`;
 
-fs.rmSync( wpTestsDir, { recursive: true, force: true } );
-fs.rmSync( wpCoreDir, { recursive: true, force: true } );
+fs.rmSync( wpTestsDir, { force: true, recursive: true } );
+fs.rmSync( wpCoreDir, { force: true, recursive: true } );
 
 const installWordPress = async () => {
 	if ( fs.existsSync( wpCoreDir ) ) {
@@ -99,24 +95,13 @@ const setTestsTag = ( versionDataString ) => {
 	}
 };
 
-const writeToTmp = ( response, data ) => {
-	const jsonString = JSON.stringify( data );
-	fs.writeFile( '/tmp/wp-latest-json', jsonString, async ( err ) => {
-		if ( err ) {
-			throw new Error( 'Error writing file', err );
-		}
-
-		const wpLatestData = fs.readFileSync( '/tmp/wp-latest-json', 'utf8' );
-		await setTestsTag( wpLatestData );
-		await installWordPress();
-	} );
+const syncLatestData = async () => {
+	await util.download( 'http://api.wordpress.org/core/version-check/1.7/', `/tmp/wp-latest.json` );
+	const wpLatestData = fs.readFileSync( '/tmp/wp-latest.json', 'utf8' );
+	await setTestsTag( wpLatestData );
 };
 
-const curl = new Curl();
-const close = curl.close.bind( curl );
-
-curl.setOpt( 'URL', 'http://api.wordpress.org/core/version-check/1.7/' );
-curl.on( 'end', writeToTmp );
-curl.on( 'error', close );
-
-curl.perform();
+( async () => {
+	await syncLatestData();
+	await installWordPress();
+} )();
