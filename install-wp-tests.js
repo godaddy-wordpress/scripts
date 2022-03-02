@@ -95,6 +95,41 @@ const setTestsTag = ( versionDataString ) => {
 	}
 };
 
+const installDatabase = async () => {
+	if ( skipDbCreate ) {
+		return;
+	}
+
+	const mysql = require( 'mysql' );
+	const connection = mysql.createConnection( {
+		host: dbHost,
+		password: dbPass,
+		user: dbUser,
+	} );
+
+	connection.connect();
+
+	// TODO: This is created in run_e2e_tests in config.yml.
+	const circleCiJob = '';
+	if ( circleCiJob === 'e2e-firefox' || circleCiJob === 'e2e-chrome' ) {
+		// create the e2e test database
+		connection.query( 'CREATE DATABASE coblocks', function( error ) {
+			if ( error ) {
+				throw error;
+			}
+		} );
+		connection.end();
+		return;
+	}
+
+	connection.query( `CREATE DATABASE ${ dbName }`, function( error ) {
+		if ( error ) {
+			throw error;
+		}
+	} );
+	connection.end();
+};
+
 const syncLatestData = async () => {
 	await util.download( 'http://api.wordpress.org/core/version-check/1.7/', `/tmp/wp-latest.json` );
 	const wpLatestData = fs.readFileSync( '/tmp/wp-latest.json', 'utf8' );
@@ -103,5 +138,6 @@ const syncLatestData = async () => {
 
 ( async () => {
 	await syncLatestData();
-	await installWordPress();
+	// await installWordPress();
+	await installDatabase();
 } )();
