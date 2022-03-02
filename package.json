@@ -18,5 +18,8 @@
   "devDependencies": {
     "eslint": "^8.10.0",
     "eslint-plugin-import": "^2.25.4"
+  },
+  "engines": {
+    "node": ">=17.6.0"
   }
 }
