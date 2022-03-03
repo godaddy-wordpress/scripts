@@ -40,7 +40,20 @@ const handleError = ( error ) => {
 	}
 };
 
+const logToConsole = ( data, type = 'table' ) => {
+	if ( type === 'table' ) {
+		// Disable reason: We allow table to console for explicit logging scenarios.
+		// eslint-disable-next-line no-console
+		console.table( data );
+		return;
+	}
+	// Disable reason: We allow log to console for explicit logging scenarios.
+	// eslint-disable-next-line no-console
+	console.log( data );
+};
+
 exports.download = download;
 exports.unzip = unzip;
 exports.doesFileExist = doesFileExist;
 exports.handleError = handleError;
+exports.logToConsole = logToConsole;
