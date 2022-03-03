@@ -126,12 +126,12 @@
 			client.cmd(
 				coDefaults.concat(
 					[ `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/includes/`, `${ wpTestsDir }/includes` ],
-				), ( err ) => handleError( err ) );
+				), handleError );
 
 			client.cmd(
 				coDefaults.concat(
 					[ `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/data/`, `${ wpTestsDir }/data` ],
-				), ( err ) => handleError( err ) );
+				), handleError );
 		}
 
 		if ( ! await doesFileExist( `${ wpTestsDir }/wp-tests-config.php` ) ) {
