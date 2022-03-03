@@ -12,12 +12,12 @@ const dbUser = passedArgs[ 1 ];
 const dbPass = passedArgs[ 2 ];
 const dbHost = passedArgs?.[ 3 ] ? passedArgs[ 3 ] : 'localhost';
 const wpVersion = passedArgs?.[ 4 ] ? passedArgs[ 4 ] : 'latest';
-const skipDbCreate = passedArgs?.[ 5 ] ? passedArgs[ 5 ] : 'false';
+const skipDbCreate = passedArgs?.[ 5 ] ? passedArgs[ 5 ] : false;
 let wpTestsTag;
 
 const fs = require( 'fs' );
 const os = require( 'os' );
-const util = require( './utils' );
+const { download, unzip } = require( './utils' );
 const tmpDir = fs.mkdtempSync( os.tmpdir() );
 
 const wpTestsDir = `${ tmpDir }/wordpress-tests-lib`;
@@ -36,8 +36,8 @@ const installWordPress = async () => {
 	if ( wpVersion === 'nightly' || wpVersion === 'trunk' ) {
 		try {
 			await fs.promises.mkdir( `${ tmpDir }/wordpress-nightly`, { recursive: true } );
-			await util.download( 'https://wordpress.org/nightly-builds/wordpress-latest.zip', `${ tmpDir }/wordpress-nightly.zip` );
-			await util.unzip( `${ tmpDir }/wordpress-nightly.zip`, `${ tmpDir }/` );
+			await download( 'https://wordpress.org/nightly-builds/wordpress-latest.zip', `${ tmpDir }/wordpress-nightly.zip` );
+			await unzip( `${ tmpDir }/wordpress-nightly.zip`, `${ tmpDir }/` );
 			await fs.promises.rename( `${ tmpDir }/wordpress-nightly/`, wpCoreDir );
 		} catch ( coreDownloadError ) {
 			throw new Error( `Core download failure occurred: ${ coreDownloadError }` );
@@ -45,8 +45,8 @@ const installWordPress = async () => {
 		return;
 	}
 
-	await util.download( `https://wordpress.org/${ archiveName }.zip`, `${ tmpDir }/wordpress.zip` );
-	await util.unzip( `${ tmpDir }/wordpress.zip`, `${ tmpDir }/` );
+	await download( `https://wordpress.org/${ archiveName }.zip`, `${ tmpDir }/wordpress.zip` );
+	await unzip( `${ tmpDir }/wordpress.zip`, `${ tmpDir }/` );
 };
 
 const setTestsTag = ( versionDataString ) => {
@@ -101,19 +101,14 @@ const installDatabase = async () => {
 	}
 
 	const mysql = require( 'mysql' );
-	const connection = mysql.createConnection( {
-		host: dbHost,
-		password: dbPass,
-		user: dbUser,
-	} );
-
+	const connection = mysql.createConnection( { host: dbHost, password: dbPass, user: dbUser } );
 	connection.connect();
 
 	// TODO: This is created in run_e2e_tests in config.yml.
 	const circleCiJob = '';
 	if ( circleCiJob === 'e2e-firefox' || circleCiJob === 'e2e-chrome' ) {
 		// create the e2e test database
-		connection.query( 'CREATE DATABASE coblocks', function( error ) {
+		connection.query( 'CREATE DATABASE coblocks', ( error ) => {
 			if ( error ) {
 				throw error;
 			}
@@ -122,7 +117,7 @@ const installDatabase = async () => {
 		return;
 	}
 
-	connection.query( `CREATE DATABASE ${ dbName }`, function( error ) {
+	connection.query( `CREATE DATABASE IF NOT EXISTS ${ dbName }`, ( error ) => {
 		if ( error ) {
 			throw error;
 		}
@@ -142,34 +137,39 @@ const installTestSuite = async () => {
 			}
 		};
 
-		client.cmd( [ 'co', '--quiet', '--ignore-externals', `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/includes/`, `${ wpTestsDir }/includes` ], ( err ) => handleError( err ) );
+		const coDefaults = [ 'co', '--quiet', '--ignore-externals' ];
+		client.cmd(
+			coDefaults.concat( `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/includes/ ${ wpTestsDir }/includes`.split( ' ' ) ),
+			( err ) => handleError( err ) );
 
-		client.cmd( [ 'co', '--quiet', '--ignore-externals', `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/data/`, `${ wpTestsDir }/data` ], ( err ) => handleError( err ) );
+		client.cmd(
+			coDefaults.concat( `https://develop.svn.wordpress.org/${ wpTestsTag }/tests/phpunit/data/ ${ wpTestsDir }/data`.split( ' ' ) ),
+			( err ) => handleError( err ) );
+	}
+
+	if ( ! fs.existsSync( `${ wpTestsDir }/wp-tests-config.php` ) ) {
+		await download( `https://develop.svn.wordpress.org/${ wpTestsTag }/wp-tests-config-sample.php`, `${ wpTestsDir }/wp-tests-config.php` );
+		let wpTestsConfig = fs.readFileSync( `${ wpTestsDir }/wp-tests-config.php`, 'utf8' );
+
+		wpTestsConfig = wpTestsConfig.replace( "dirname( __FILE__ ) . '/src/'", `'${ wpCoreDir }'` );
+		wpTestsConfig = wpTestsConfig.replace( 'youremptytestdbnamehere', dbName );
+		wpTestsConfig = wpTestsConfig.replace( 'yourusernamehere', dbUser );
+		wpTestsConfig = wpTestsConfig.replace( 'yourpasswordhere', dbPass );
+		wpTestsConfig = wpTestsConfig.replace( 'localhost', dbHost );
+
+		fs.writeFileSync( `${ wpTestsDir }/wp-tests-config.php`, wpTestsConfig );
 	}
 };
 
-// 	if [ ! -f wp-tests-config.php ]; then
-// 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
-// 		# remove all forward slashes in the end
-// 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
-// 		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
-// 		sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR"/wp-tests-config.php
-// 		sed $ioption "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR"/wp-tests-config.php
-// 		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
-// 		sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
-// 	fi
-
-// }
-
 const syncLatestData = async () => {
-	await util.download( 'http://api.wordpress.org/core/version-check/1.7/', `/tmp/wp-latest.json` );
+	await download( 'http://api.wordpress.org/core/version-check/1.7/', `/tmp/wp-latest.json` );
 	const wpLatestData = fs.readFileSync( '/tmp/wp-latest.json', 'utf8' );
 	await setTestsTag( wpLatestData );
 };
 
 ( async () => {
 	await syncLatestData();
-	// await installWordPress();
-	// await installDatabase();
+	await installWordPress();
 	await installTestSuite();
+	await installDatabase();
 } )();
