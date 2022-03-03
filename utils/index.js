@@ -2,6 +2,7 @@ const { createWriteStream } = require( 'fs' );
 const { pipeline } = require( 'stream' );
 const { promisify } = require( 'util' );
 const AdmZip = require( 'adm-zip' );
+const fs = require( 'fs' ).promises;
 
 // Disable reason: Not sure why this is unsupported because Node 17 should support es.
 // eslint-disable-next-line node/no-unsupported-features/es-syntax
@@ -24,5 +25,22 @@ const unzip = async ( file, path ) => {
 	zip.extractAllTo( path, true );
 };
 
+const doesFileExist = async ( path ) => {
+	try {
+		await fs.access( path, fs.F_OK );
+		return true;
+	} catch ( err ) {
+		return false;
+	}
+};
+
+const handleError = ( error ) => {
+	if ( error ) {
+		throw ( error );
+	}
+};
+
 exports.download = download;
 exports.unzip = unzip;
+exports.doesFileExist = doesFileExist;
+exports.handleError = handleError;
