@@ -73,6 +73,10 @@ async function commentOnPR() {
   let comment = await octokit.request( `POST /repos/${process.env.CIRCLE_PROJECT_USERNAME}/${process.env.CIRCLE_PROJECT_REPONAME}/issues/${PR_ID}/comments`, {
     body: `Download go.zip: ${buildJobArtifactURL}`
   } );
+  if ( 201 !== comment.status ) {
+    console.log( `${RED}Error:${RESET} Comment could not be created.` );
+    process.env.exit( 1 );
+  }
   console.log( `${GREEN}Success:${RESET} Comment created.` );
   console.log( `View Comment: ${comment.data.html_url}` );
 }
