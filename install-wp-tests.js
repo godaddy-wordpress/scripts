@@ -102,8 +102,7 @@
 		const connection = mysql.createConnection( { host: dbHost, password: dbPass, user: dbUser } );
 		connection.connect();
 
-		// TODO: circleCiJob used to be created in run_e2e_tests in config.yml.
-		const circleCiJob = '';
+		const circleCiJob = process.env.CIRCLE_JOB;
 		if ( circleCiJob === 'e2e-firefox' || circleCiJob === 'e2e-chrome' ) {
 		// create the e2e test database
 			connection.query( 'CREATE DATABASE coblocks', handleError );

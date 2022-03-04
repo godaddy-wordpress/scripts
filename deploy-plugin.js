@@ -15,8 +15,8 @@ const { exec } = require( 'child_process' );
 	await fs.rm( `${ os.homedir() }/coblocks/trunk/`, { force: true, recursive: true } );
 	await fs.copyFile( 'build/coblocks/', `${ os.homedir() }/coblocks/trunk/` );
 
-	// TODO circleTag is coming from Circle CI.
 	// Create the tag on the SVN repo and copy over plugin files
+	const circleTag = process.env.CIRCLE_TAG;
 	client.cmd( [ 'cp', `${ os.homedir() }/coblocks`, `${ os.homedir() }/coblocks/tags/${ circleTag }` ], handleError );
 	client.cmd( [ 'commit', '-m', `Tagging version ${ circleTag }` ], handleError );
 
@@ -36,9 +36,9 @@ const { exec } = require( 'child_process' );
 		filesToDelete.forEach( ( line, index ) => filesToDelete[ index ] = line.replace( '!       ', '' ) );
 	} );
 
-	// TODO  WP_ORG_USERNAME & WP_ORG_PASSWORD are from circle CI.
-	const wpOrgUsername = '';
-	const wpOrgPassword = '';
+	const wpOrgUsername = process.env.WP_ORG_USERNAME;
+	const wpOrgPassword = process.env.WP_ORG_PASSWORD;
+
 	// Deploy new version
 	client.cmd(
 		[
@@ -53,12 +53,10 @@ const { exec } = require( 'child_process' );
 		], logToConsole,
 	);
 
-	// TODO: these secrets all come from CI.
-	const ghAuthToken = '';
-	const circleProjectUername = '';
-	const circleProjectReponame = '';
-	const circleSha1 = '';
-	const circleTag = '';
+	const ghAuthToken = process.env.GH_AUTH_TOKEN;
+	const circleProjectUername = process.env.CIRCLE_PROJECT_USERNAME;
+	const circleProjectReponame = process.env.CIRCLE_PROJECT_REPONAME;
+	const circleSha1 = process.env.CIRCLE_SHA1;
 	let changelog = await fs.readFile( `${ os.homedir() }/development/wordpress/wp-content/plugins/coblocks/readme.txt`, 'utf8' );
 	changelog = changelog.split( '== Changelog ==' ).join();
 
