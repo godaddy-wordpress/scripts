@@ -5,12 +5,12 @@ exec( 'sudo apt-get update && sudo apt-get install -y subversion default-mysql-c
 	( error, stdout, stderr ) => {
 		handleError( error );
 		handleError( stderr );
-		logToConsole( stdout );
+		logToConsole( stdout, 'table' );
 	} );
 
 exec( "node ./install-wp-tests.js wordpress_test root '' 127.0.0.1 latest",
 	( error, stdout, stderr ) => {
 		handleError( error );
 		handleError( stderr );
-		logToConsole( stdout );
+		logToConsole( stdout, 'table' );
 	} );

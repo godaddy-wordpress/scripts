@@ -53,6 +53,7 @@ const { exec } = require( 'child_process' );
 		], logToConsole,
 	);
 
+	// TODO: these secrets all come from CI.
 	const ghAuthToken = '';
 	const circleProjectUername = '';
 	const circleProjectReponame = '';
@@ -65,6 +66,6 @@ const { exec } = require( 'child_process' );
 		( error, stdout, stderr ) => {
 			handleError( error );
 			handleError( stderr );
-			logToConsole( stdout );
+			logToConsole( stdout, 'table' );
 		} );
 } )();
