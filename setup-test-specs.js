@@ -5,13 +5,12 @@ const fs = require( 'fs' );
 const glob = require( 'glob' );
 const { handleError, logToConsole } = require( './utils' );
 
-
 const specs = [];
 const specString = '';
 
 async function boot() {
 	const { stdout: gitDiffOutput, stderr } = await exec( 'cd ../coblocks && git diff --name-only origin/master' );
-	handleError(stderr);
+	handleError( stderr );
 
 	const changedFiles = gitDiffOutput.split( '\n' );
 
