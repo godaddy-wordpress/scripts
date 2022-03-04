@@ -1,13 +1,23 @@
 {
-  "name": "@godaddy-wordpress/development-scripts",
+  "name": "@godaddy-wordpress/scripts",
   "version": "0.1.0",
   "description": "Collection of scripts used for management of CI pipelines as well as general development scripts.",
+  "homepage": "https://github.com/godaddy-wordpress/scripts",
+  "repository": "godaddy-wordpress/scripts",
+
   "main": "./",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "GoDaddy",
-  "license": "ISC",
+	"license": "GPL-2.0",
+  "keywords": [
+		"coblocks",
+		"wordpress"
+	],
+  "publishConfig": {
+		"access": "public"
+	},
+  "bugs": {
+		"url": "https://github.com/godaddy-wordpress/scripts/issues"
+	},
   "dependencies": {
     "@octokit/core": "^3.5.1",
     "@wordpress/eslint-plugin": "^10.0.2",
