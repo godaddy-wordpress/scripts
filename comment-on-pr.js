@@ -1,8 +1,4 @@
 const { Octokit } = require( '@octokit/core' );
-const gitconfig = require( 'gitconfig' );
-const path = require( 'path' );
-const fs = require( 'fs' );
-const child_process = require( 'child_process' );
 const axios = require( 'axios' );
 const _ = require( 'lodash' );
 
