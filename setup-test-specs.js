@@ -3,18 +3,17 @@ const exec = util.promisify( require( 'child_process' ).exec );
 const { match } = require( 'node-match-path' );
 const fs = require( 'fs' );
 const glob = require( 'glob' );
+const { handleError, logToConsole } = require( './utils' );
+
 
 const specs = [];
 const specString = '';
 
 async function boot() {
-	const { stdout, stderr } = await exec( 'cd ../coblocks && git diff --name-only origin/master' );
+	const { stdout: gitDiffOutput, stderr } = await exec( 'cd ../coblocks && git diff --name-only origin/master' );
+	handleError(stderr);
 
-	if ( stderr ) {
-		return;
-	}
-
-	const changedFiles = stdout.split( '\n' );
+	const changedFiles = gitDiffOutput.split( '\n' );
 
 	changedFiles.reduce( ( acc, file ) => {
 		if ( file === '' ) {
@@ -78,7 +77,7 @@ async function boot() {
 		return acc;
 	}, [] );
 
-	console.log( `Running the following Cypress spec files: ${ specs.map( ( s ) => `${ s } ` ) }` );
+	logToConsole( `Running the following Cypress spec files: ${ specs.map( ( s ) => `${ s } ` ) }` );
 
 	fs.writeFile( '/tmp/specstring', specString );
 }

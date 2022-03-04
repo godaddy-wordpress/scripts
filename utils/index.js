@@ -40,7 +40,7 @@ const handleError = ( error ) => {
 	}
 };
 
-const logToConsole = ( data, type = 'table' ) => {
+const logToConsole = ( data, type = 'log' ) => {
 	if ( type === 'table' ) {
 		// Disable reason: We allow table to console for explicit logging scenarios.
 		// eslint-disable-next-line no-console
