@@ -57,7 +57,7 @@ const { exec } = require( 'child_process' );
 	const circleProjectUername = process.env.CIRCLE_PROJECT_USERNAME;
 	const circleProjectReponame = process.env.CIRCLE_PROJECT_REPONAME;
 	const circleSha1 = process.env.CIRCLE_SHA1;
-	let changelog = await fs.readFile( `${ os.homedir() }/development/wordpress/wp-content/plugins/coblocks/readme.txt`, 'utf8' );
+	let changelog = await fs.readFile( `${ os.homedir() }/project/readme.txt`, 'utf8' );
 	changelog = changelog.split( '== Changelog ==' ).join();
 
 	exec( `ghr -t ${ ghAuthToken } -u ${ circleProjectUername } -r ${ circleProjectReponame } -c ${ circleSha1 } -b "${ changelog }" -delete ${ circleTag } /tmp/artifacts`,
