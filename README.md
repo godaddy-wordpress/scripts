@@ -4,9 +4,10 @@ Repository of scripts the be used in the WordPress software development pipeline
 
 ## How to deploy
 
-```bash
-npm version minor
-git push
-git push --tags
-npm publish
-```
+
+- Bump minor version of scripts in package.json.
+- run `git tag 0._._` following semantic versioning.
+- Commit changes.
+- `git push`
+- `git push --tags`
+- `npm publish`
