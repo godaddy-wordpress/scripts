@@ -9,9 +9,12 @@
   "author": "GoDaddy",
   "license": "ISC",
   "dependencies": {
+    "@octokit/core": "^3.5.1",
     "@wordpress/eslint-plugin": "^10.0.2",
     "adm-zip": "^0.5.9",
+    "axios": "^0.26.0",
     "eslint-plugin-node": "^11.1.0",
+    "lodash": "^4.17.21",
     "mysql": "^2.18.1",
     "node-fetch": "^3.2.1",
     "svn-spawn": "^0.1.6"
