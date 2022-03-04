@@ -16,9 +16,9 @@ async function boot() {
 
 	const changedFiles = stdout.split( '\n' );
 
-	changedFiles.reduce( ( acc, file  ) => {
+	changedFiles.reduce( ( acc, file ) => {
 		if ( file === '' ) {
-			return;
+			return acc;
 		}
 
 		const isBlockFile = match( 'src/blocks/*', file );
@@ -33,9 +33,9 @@ async function boot() {
 			}
 
 			if ( specString.length === 0 ) {
-				specString.concat( `src/blocks/${testSpec}/**/*.cypress.js` );
+				specString.concat( `src/blocks/${ specName }/**/*.cypress.js` );
 			} else {
-				specString.concat( `,src/blocks/${testSpec}/**/*.cypress.js` );
+				specString.concat( `,src/blocks/${ specName }/**/*.cypress.js` );
 			}
 		}
 
@@ -46,14 +46,14 @@ async function boot() {
 
 			glob( `src/extensions/${ specName }/**/*.cypress.js`, ( err, res ) => {
 				if ( res.length === 0 ) {
-					continue;
+					return acc;
 				}
 			} );
 
 			if ( specString.length === 0 ) {
-				specString.concat( `src/extensions/${testSpec}/**/*.cypress.js` );
+				specString.concat( `src/extensions/${ specName }/**/*.cypress.js` );
 			} else {
-				specString.concat( `,src/extensions/${testSpec}/**/*.cypress.js` );
+				specString.concat( `,src/extensions/${ specName }/**/*.cypress.js` );
 			}
 		}
 
@@ -64,21 +64,21 @@ async function boot() {
 
 			glob( `src/components/${ specName }/**/*.cypress.js`, ( err, res ) => {
 				if ( res.length === 0 ) {
-					continue;
+					return acc;
 				}
 			} );
 
 			if ( specString.length === 0 ) {
-				specString.concat( `src/components/${testSpec}/**/*.cypress.js` );
+				specString.concat( `src/components/${ specName }/**/*.cypress.js` );
 			} else {
-				specString.concat( `,src/components/${testSpec}/**/*.cypress.js` );
+				specString.concat( `,src/components/${ specName }/**/*.cypress.js` );
 			}
 		}
 
 		return acc;
 	}, [] );
 
-	console.log(`Running the following Cypress spec files: ${specs.map( s => `${s} `)}`);
+	console.log( `Running the following Cypress spec files: ${ specs.map( ( s ) => `${ s } ` ) }` );
 
 	fs.writeFile( '/tmp/specstring', specString );
 }
