@@ -19,7 +19,7 @@ let buildJobArtifactURL, finalArtifactPath;
 /**
  * Check the required constants before continuing.
  */
-function checkConstants() {
+const checkConstants = () => {
 	// No auth token.
 	if ( null === AUTH_TOKEN ) {
 		logToConsole( `${ RED }Error:${ RESET } No Github authentication token provided (GH_AUTH_TOKEN environment variable)` );
@@ -31,12 +31,12 @@ function checkConstants() {
 		logToConsole( 'This does not appear to be a pull request.' );
 		handleError( new Error( 'This does not appear to be a pull request.' ) );
 	}
-}
+};
 
 /**
  * Authorize the user with Github.
  */
-async function authorizeUser() {
+const authorizeUser = async () => {
 	const response = await octokit.request( 'GET /user' );
 
 	if ( null === response ) {
@@ -47,14 +47,14 @@ async function authorizeUser() {
 	const userName = response.data.login;
 
 	logToConsole( `${ GREEN }Success:${ RESET } Successfully authenticated as ${ userName }` );
-}
+};
 
 /**
  * Return the pull request ID from the Circle CI URL.
  *
  * @return {string} The pull request ID.
  */
-function getPullRequestID() {
+const getPullRequestID = () => {
 	const url = process.env.CIRCLE_PULL_REQUEST;
 	const pullRequestID = url.substring( url.lastIndexOf( '/' ) + 1 );
 	if ( null === pullRequestID ) {
@@ -62,12 +62,12 @@ function getPullRequestID() {
 	}
 	logToConsole( `${ GREEN }Success:${ RESET } Pull Request ID: ${ pullRequestID }` );
 	return pullRequestID;
-}
+};
 
 /**
  * Post a comment on an existing PR with a .zip attachment.
  */
-async function commentOnPR() {
+const commentOnPR = async () => {
 	// Create a new comment with a link to the attachment
 	const comment = await octokit.request( `POST /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments`, {
 		body: `Download go.zip: ${ buildJobArtifactURL }`,
@@ -78,12 +78,12 @@ async function commentOnPR() {
 	}
 	logToConsole( `${ GREEN }Success:${ RESET } Comment created.` );
 	logToConsole( `View Comment: ${ comment.data.html_url }` );
-}
+};
 
 /**
  * Get the build job artifact URL
  */
-async function getBuildJobArtifactURL() {
+const getBuildJobArtifactURL = async () => {
 	return new Promise( ( resolve ) => {
 		const url = `https://circleci.com/api/v1.1/project/gh/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }`;
 		axios.get( url )
@@ -116,17 +116,17 @@ async function getBuildJobArtifactURL() {
 				handleError( new Error( `${ error }` ) );
 			} );
 	} );
-}
+};
 
 /**
  * Run the script.
  */
-async function run() {
+const run = async () => {
 	checkConstants();
 	await authorizeUser();
 	await getBuildJobArtifactURL();
 	await commentOnPR();
-}
+};
 
 const octokit = new Octokit( { auth: AUTH_TOKEN } );
 

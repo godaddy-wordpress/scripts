@@ -8,7 +8,7 @@ const { handleError, logToConsole } = require( './utils' );
 const specs = [];
 const specString = '';
 
-async function boot() {
+const boot = async () => {
 	const { stdout: gitDiffOutput, stderr } = await exec( 'cd ../coblocks && git diff --name-only origin/master' );
 	handleError( stderr );
 
@@ -79,7 +79,7 @@ async function boot() {
 	logToConsole( `Running the following Cypress spec files: ${ specs.map( ( s ) => `${ s } ` ) }` );
 
 	fs.writeFile( '/tmp/specstring', specString );
-}
+};
 
 boot();
 
