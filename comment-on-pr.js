@@ -1,7 +1,7 @@
 const { Octokit } = require( '@octokit/core' );
 const axios = require( 'axios' );
-const _ = require( 'lodash' );
-const { handleError, logToConsole } = require( './utils' );
+const { filter } = require( 'lodash' );
+const { handleError, logToConsole, getPullRequestID } = require( './utils' );
 
 // Colors
 const RED = '\x1b[31m';
@@ -50,21 +50,6 @@ const authorizeUser = async () => {
 };
 
 /**
- * Return the pull request ID from the Circle CI URL.
- *
- * @return {string} The pull request ID.
- */
-const getPullRequestID = () => {
-	const url = process.env.CIRCLE_PULL_REQUEST;
-	const pullRequestID = url.substring( url.lastIndexOf( '/' ) + 1 );
-	if ( null === pullRequestID ) {
-		return null;
-	}
-	logToConsole( `${ GREEN }Success:${ RESET } Pull Request ID: ${ pullRequestID }` );
-	return pullRequestID;
-};
-
-/**
  * Post a comment on an existing PR with a .zip attachment.
  */
 const commentOnPR = async () => {
@@ -89,8 +74,8 @@ const getBuildJobArtifactURL = async () => {
 		axios.get( url )
 			.then( function( response ) {
 				// handle success
-				let filteredResponse = _.filter( response.data, { workflows: { job_name: 'build' } } ); // filter by workflow job name
-				filteredResponse = _.filter( filteredResponse, { branch: process.env.CIRCLE_BRANCH } ); // ensure we only get results for this branch
+				let filteredResponse = filter( response.data, { workflows: { job_name: 'build' } } ); // filter by workflow job name
+				filteredResponse = filter( filteredResponse, { branch: process.env.CIRCLE_BRANCH } ); // ensure we only get results for this branch
 				if ( null === filteredResponse || Object.keys( filteredResponse ).length < 1 ) {
 					logToConsole( `${ RED }Error:${ RESET } Could not find a build job.` );
 					handleError( new Error( 'Could not find a build job.' ) );

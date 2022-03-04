@@ -52,8 +52,29 @@ const logToConsole = ( data, type = 'log' ) => {
 	console.log( data );
 };
 
+/**
+ * Return the pull request ID from the Circle CI URL.
+ *
+ * @return {string} The pull request ID.
+ */
+const getPullRequestID = () => {
+	// Colors
+	const GREEN = '\x1b[32m';
+	const RESET = '\x1b[0m';
+
+	let url = process.env.CIRCLE_PULL_REQUEST;
+	url = url.replace( /\/$/, '' );
+	const pullRequestID = url.substring( url.lastIndexOf( '/' ) + 1 );
+	if ( null === pullRequestID ) {
+		return null;
+	}
+	logToConsole( `${ GREEN }Success:${ RESET } Pull Request ID: ${ pullRequestID }` );
+	return pullRequestID;
+};
+
 exports.download = download;
 exports.unzip = unzip;
 exports.doesFileExist = doesFileExist;
 exports.handleError = handleError;
 exports.logToConsole = logToConsole;
+exports.getPullRequestID = getPullRequestID;
