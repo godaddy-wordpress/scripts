@@ -16,7 +16,7 @@ async function boot() {
 
 	const changedFiles = stdout.split( '\n' );
 
-	changedFiles.map( ( file ) => {
+	changedFiles.reduce( ( acc, file  ) => {
 		if ( file === '' ) {
 			return;
 		}
@@ -74,7 +74,9 @@ async function boot() {
 				specString.concat( `,src/components/${testSpec}/**/*.cypress.js` );
 			}
 		}
-	} );
+
+		return acc;
+	}, [] );
 
 	console.log(`Running the following Cypress spec files: ${specs.map( s => `${s} `)}`);
 
