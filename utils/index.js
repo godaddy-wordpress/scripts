@@ -34,7 +34,13 @@ const doesFileExist = async ( path ) => {
 	}
 };
 
-const handleError = ( error ) => {
+const handleError = ( error, graceful = false ) => {
+	if ( graceful ) {
+		logToConsole( error );
+		// Disable reason. We explicitly bail of of scripts in certain situations.
+		// eslint-disable-next-line no-process-exit
+		process.exit( 0 );
+	}
 	if ( error ) {
 		throw ( error );
 	}

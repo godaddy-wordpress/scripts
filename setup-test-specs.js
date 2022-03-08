@@ -1,18 +1,34 @@
-const util = require( 'util' );
-const exec = util.promisify( require( 'child_process' ).exec );
-const { match } = require( 'node-match-path' );
-const fs = require( 'fs' );
-const glob = require( 'glob' );
-const { handleError, logToConsole } = require( './utils' );
 
-const specs = [];
-const specString = '';
+'use strict';
+( async () => {
+	const util = require( 'util' );
+	const exec = util.promisify( require( 'child_process' ).exec );
+	const { match } = require( 'node-match-path' );
+	const fs = require( 'fs' ).promises;
+	const glob = require( 'glob' );
+	const { handleError, logToConsole } = require( './utils' );
 
-const boot = async () => {
-	const { stdout: gitDiffOutput, stderr } = await exec( 'cd ../coblocks && git diff --name-only origin/master' );
-	handleError( stderr );
+	const specs = [];
+	let specString = '';
+	// First two arguments are 'node' and patch to script.
+	let passedArgs = process.argv.slice( 2 ).join( ' ' ) || '';
+	if ( ! passedArgs ) {
+		const {
+			stdout: gitMainBranch,
+			stderr: mainBranchErr,
+		} = await exec( "git branch | cut -c 3- | grep -E '^master$|^main$'" );
+		handleError( mainBranchErr );
 
-	const changedFiles = gitDiffOutput.split( '\n' );
+		const {
+			stdout: gitDiffOutput,
+			stderr: gitDiffErr,
+		} = await exec( `git diff --name-only $(git merge-base HEAD ${ gitMainBranch })` );
+		handleError( gitDiffErr );
+		passedArgs = gitDiffOutput;
+	}
+
+	const changedFiles = passedArgs.trim().split( '\n' );
+	console.log( changedFiles );
 
 	changedFiles.reduce( ( acc, file ) => {
 		if ( file === '' ) {
@@ -31,9 +47,9 @@ const boot = async () => {
 			}
 
 			if ( specString.length === 0 ) {
-				specString.concat( `src/blocks/${ specName }/**/*.cypress.js` );
+				specString = specString.concat( `src/blocks/${ specName }/**/*.cypress.js` );
 			} else {
-				specString.concat( `,src/blocks/${ specName }/**/*.cypress.js` );
+				specString = specString.concat( `,src/blocks/${ specName }/**/*.cypress.js` );
 			}
 		}
 
@@ -49,9 +65,9 @@ const boot = async () => {
 			} );
 
 			if ( specString.length === 0 ) {
-				specString.concat( `src/extensions/${ specName }/**/*.cypress.js` );
+				specString = specString.concat( `src/extensions/${ specName }/**/*.cypress.js` );
 			} else {
-				specString.concat( `,src/extensions/${ specName }/**/*.cypress.js` );
+				specString = specString.concat( `,src/extensions/${ specName }/**/*.cypress.js` );
 			}
 		}
 
@@ -67,19 +83,19 @@ const boot = async () => {
 			} );
 
 			if ( specString.length === 0 ) {
-				specString.concat( `src/components/${ specName }/**/*.cypress.js` );
+				specString = specString.concat( `src/components/${ specName }/**/*.cypress.js` );
 			} else {
-				specString.concat( `,src/components/${ specName }/**/*.cypress.js` );
+				specString = specString.concat( `,src/components/${ specName }/**/*.cypress.js` );
 			}
 		}
 
 		return acc;
 	}, [] );
 
+	if ( ! specString ) {
+		handleError( 'No applicable specs detected', true );
+	}
 	logToConsole( `Running the following Cypress spec files: ${ specs.map( ( s ) => `${ s } ` ) }` );
 
-	fs.writeFile( '/tmp/specstring', specString );
-};
-
-boot();
-
+	await fs.writeFile( '/tmp/specstring', specString );
+} )();
