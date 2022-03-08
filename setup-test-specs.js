@@ -28,7 +28,6 @@
 	}
 
 	const changedFiles = passedArgs.trim().split( '\n' );
-	console.log( changedFiles );
 
 	changedFiles.reduce( ( acc, file ) => {
 		if ( file === '' ) {
