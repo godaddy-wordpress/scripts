@@ -12,9 +12,9 @@
 	const dbName = passedArgs[ 0 ];
 	const dbUser = passedArgs[ 1 ];
 	const dbPass = passedArgs[ 2 ];
-	const dbHost = passedArgs?.[ 3 ] ? passedArgs[ 3 ] : 'localhost';
-	const wpVersion = passedArgs?.[ 4 ] ? passedArgs[ 4 ] : 'latest';
-	const skipDbCreate = passedArgs?.[ 5 ] ? passedArgs[ 5 ] : false;
+	const dbHost = passedArgs[ 3 ] ? passedArgs[ 3 ] : 'localhost';
+	const wpVersion = passedArgs[ 4 ] ? passedArgs[ 4 ] : 'latest';
+	const skipDbCreate = passedArgs[ 5 ] ? passedArgs[ 5 ] : false;
 	let wpTestsTag;
 
 	const fs = require( 'fs' ).promises;
@@ -50,7 +50,7 @@
 
 	const setTestsTag = ( versionDataString ) => {
 		const isRcRegex = /^[0-9]+\.[0-9]+-(beta|RC)[0-9]+$/;
-		if ( wpVersion.match( isRcRegex )?.[ 1 ] ) {
+		if ( wpVersion.match( isRcRegex )[ 1 ] ) {
 			const newTag = wpVersion.replace( /-beta|-RC[0-9]+$/, '' );
 			wpTestsTag = `branches/${ newTag }`;
 			archiveName = `wordpress-${ newTag }`;
@@ -81,7 +81,7 @@
 		const latestVersionRegex = /[0-9]+\.[0-9]+(\.[0-9]+)?/mg;
 		const versionMatch = versionDataString.match( latestVersionRegex );
 		if ( versionMatch ) {
-			const newTag = versionMatch?.[ 0 ];
+			const newTag = versionMatch[ 0 ];
 			wpTestsTag = `tags/${ newTag }`;
 			archiveName = 'latest';
 			return;
@@ -149,7 +149,7 @@
 
 	const syncLatestData = async () => {
 		await download( 'http://api.wordpress.org/core/version-check/1.7/', `/tmp/wp-latest.json` );
-		const wpLatestData = fs.readFile( '/tmp/wp-latest.json', 'utf8' );
+		const wpLatestData = await fs.readFile( '/tmp/wp-latest.json', 'utf8' );
 		await setTestsTag( wpLatestData );
 		await fs.rm( wpTestsDir, { force: true, recursive: true } );
 		await fs.rm( wpCoreDir, { force: true, recursive: true } );

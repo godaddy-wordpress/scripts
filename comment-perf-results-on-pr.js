@@ -52,6 +52,7 @@ const authorizeUser = async () => {
  */
 const commentOnPR = async () => {
 	const perfResults = await fs.readFile( `${ os.homedir() }/project/post-editor-performance-results.txt`, 'utf8' );
+	logToConsole( `${ GREEN }perfResults:${ RESET } ${ perfResults }` );
 
 	// Create a new comment with a link to the attachment
 	// const comment = await octokit.request( `POST /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments`, {
