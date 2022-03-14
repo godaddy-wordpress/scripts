@@ -1,6 +1,6 @@
 {
   "name": "@godaddy-wordpress/scripts",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Collection of scripts used for management of CI pipelines as well as general development scripts.",
   "homepage": "https://github.com/godaddy-wordpress/scripts",
   "repository": "godaddy-wordpress/scripts",
