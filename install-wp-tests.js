@@ -50,7 +50,8 @@
 
 	const setTestsTag = ( versionDataString ) => {
 		const isRcRegex = /^[0-9]+\.[0-9]+-(beta|RC)[0-9]+$/;
-		if ( wpVersion.match( isRcRegex )[ 1 ] ) {
+		const processedMatch = wpVersion.match( isRcRegex );
+		if ( processedMatch && processedMatch[ 1 ] ) {
 			const newTag = wpVersion.replace( /-beta|-RC[0-9]+$/, '' );
 			wpTestsTag = `branches/${ newTag }`;
 			archiveName = `wordpress-${ newTag }`;

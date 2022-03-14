@@ -55,15 +55,15 @@ const commentOnPR = async () => {
 	logToConsole( `${ GREEN }perfResults:${ RESET } ${ perfResults }` );
 
 	// Create a new comment with a link to the attachment
-	// const comment = await octokit.request( `POST /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments`, {
-	// 	body: `Download go.zip: ${ buildJobArtifactURL }`,
-	// } );
-	// if ( 201 !== comment.status ) {
-	// 	logToConsole( `${ RED }Error:${ RESET } Comment could not be created.` );
-	// 	handleError( new Error( 'Comment could not be created.' ) );
-	// }
+	const comment = await octokit.request( `POST /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments`, {
+		body: `## Performance Test Results: \r\n '${ perfResults }'`,
+	} );
+	if ( 201 !== comment.status ) {
+		logToConsole( `${ RED }Error:${ RESET } Comment could not be created.` );
+		handleError( new Error( 'Comment could not be created.' ) );
+	}
 	logToConsole( `${ GREEN }Success:${ RESET } Comment created.` );
-	// logToConsole( `View Comment: ${ comment.data.html_url }` );
+	logToConsole( `View Comment: ${ comment.data.html_url }` );
 };
 
 /**
