@@ -68,6 +68,7 @@ const commentOnPR = async () => {
 
 /**
  * Get the build job artifact URL
+ * Todo - We should refactor this to promises.
  */
 const getBuildJobArtifactURL = async () => {
 	return new Promise( ( resolve ) => {
