@@ -14,7 +14,8 @@ const AUTH_TOKEN = process.env.GH_AUTH_TOKEN;
 // eg: https://github.com/godaddy-wordpress/go/pull/756
 const PR_ID = getPullRequestID();
 
-let buildJobArtifactURL, finalArtifactPath;
+const octokit = new Octokit( { auth: AUTH_TOKEN } );
+let buildJobArtifactURL;
 
 /**
  * Check the required constants before continuing.
@@ -112,7 +113,5 @@ const run = async () => {
 	await getBuildJobArtifactURL();
 	await commentOnPR();
 };
-
-const octokit = new Octokit( { auth: AUTH_TOKEN } );
 
 run();

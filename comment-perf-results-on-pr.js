@@ -14,6 +14,8 @@ const AUTH_TOKEN = process.env.GH_AUTH_TOKEN;
 // eg: https://github.com/godaddy-wordpress/go/pull/756
 const PR_ID = getPullRequestID();
 
+const octokit = new Octokit( { auth: AUTH_TOKEN } );
+
 /**
  * Check the required constants before continuing.
  */
@@ -74,7 +76,5 @@ const run = async () => {
 	await authorizeUser();
 	await commentOnPR();
 };
-
-const octokit = new Octokit( { auth: AUTH_TOKEN } );
 
 run();
