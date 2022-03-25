@@ -20,11 +20,16 @@
 	const fs = require( 'fs' ).promises;
 	const os = require( 'os' );
 	const { download, unzip, doesFileExist, handleError } = require( './utils' );
-	const tmpDir = await fs.mkdtemp( os.tmpdir() );
+	const tmpDir = await doesFileExist( '/tmp' ) ? '/tmp' : await fs.mkdtemp( os.tmpdir() );
 
 	const wpTestsDir = `${ tmpDir }/wordpress-tests-lib`;
 	const wpCoreDir = `${ tmpDir }/wordpress/`;
 
+	/**
+	 * @async
+	 * @function installWordPress Install WordPress.
+	 * @return {Promise<void>}
+	 */
 	const installWordPress = async () => {
 		if ( await doesFileExist( wpCoreDir ) ) {
 			handleError( new Error( 'Directory exists short circuit' ) );
@@ -48,6 +53,13 @@
 		await unzip( `${ tmpDir }/wordpress.zip`, `${ tmpDir }/` );
 	};
 
+	/**
+	 * Sets a scoped variable to be used by installTestSuite.
+	 *
+	 * @function setTestsTag Set the tests tag to download.
+	 * @param {string} versionDataString The version of WordPress to download tests for.
+	 *
+	 */
 	const setTestsTag = ( versionDataString ) => {
 		const isRcRegex = /^[0-9]+\.[0-9]+-(beta|RC)[0-9]+$/;
 		const processedMatch = wpVersion.match( isRcRegex );
@@ -115,6 +127,11 @@
 		connection.end();
 	};
 
+	/**
+	 * @async
+	 * @function installTestSuite - Installs the WordPress test suite.
+	 * @return {Promise<void>}
+	 */
 	const installTestSuite = async () => {
 		if ( ! await doesFileExist( wpTestsDir ) ) {
 			await fs.mkdir( wpTestsDir, { recursive: true } );
@@ -148,6 +165,11 @@
 		}
 	};
 
+	/**
+	 * @async
+	 * @function syncLatestData - Sync latest data from WordPress.org
+	 * @return {Promise<void>}
+	 */
 	const syncLatestData = async () => {
 		await download( 'http://api.wordpress.org/core/version-check/1.7/', `/tmp/wp-latest.json` );
 		const wpLatestData = await fs.readFile( '/tmp/wp-latest.json', 'utf8' );

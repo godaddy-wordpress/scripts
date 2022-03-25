@@ -1,4 +1,5 @@
 const { createWriteStream } = require( 'fs' );
+const { constants } = require( 'fs' );
 const { pipeline } = require( 'stream' );
 const { promisify } = require( 'util' );
 const AdmZip = require( 'adm-zip' );
@@ -8,10 +9,18 @@ const fs = require( 'fs' ).promises;
 // eslint-disable-next-line node/no-unsupported-features/es-syntax
 const fetch = ( ...args ) => import( 'node-fetch' ).then( ( { default: asyncFetch } ) => asyncFetch( ...args ) );
 
+/**
+ * @function download File downloader.
+ * @param {string} url  The URL to download.
+ * @param {string} path The path to save the file to.
+ */
 const download = async ( url, path ) => {
 	const streamPipeline = promisify( pipeline );
-
-	const response = await fetch( url );
+	const response = await fetch( url, {
+		headers: {
+			'user-agent': 'Mozilla/5.0 Chrome/96 Safari/537',
+		},
+	} );
 
 	if ( ! response.ok ) {
 		throw new Error( `unexpected response ${ response.statusText }` );
@@ -20,20 +29,39 @@ const download = async ( url, path ) => {
 	await streamPipeline( response.body, createWriteStream( path ) );
 };
 
+/**
+ * @function unzip Extract a zip file to a destination.
+ * @param {*}      file
+ * @param {string} path
+ */
 const unzip = async ( file, path ) => {
 	const zip = new AdmZip( file );
 	zip.extractAllTo( path, true );
 };
 
+/**
+ * @function doesFileExist Async check if a inode exists and handle error messages.
+ * @param {path} path Path to the inode to check
+ * @return {boolean} True if the folder exists false otherwise.
+ */
 const doesFileExist = async ( path ) => {
+	const pathWithoutTrailingSlash = path.replace( /\/$/, '' );
 	try {
-		await fs.access( path, fs.F_OK );
+		// Access has no return value of file exists.
+		// Catch error if occurs otherwise the file exists.
+		await fs.access( pathWithoutTrailingSlash, constants.F_OK );
 		return true;
 	} catch ( err ) {
+		handleError( err );
 		return false;
 	}
 };
 
+/**
+ * @function handleError Handle errors and log them to the console.
+ * @param {string}  error    Error event passed from script.
+ * @param {boolean} graceful (optional) Whether or not to gracefully exit using process.exit().
+ */
 const handleError = ( error, graceful = false ) => {
 	if ( graceful ) {
 		logToConsole( error );
@@ -46,6 +74,11 @@ const handleError = ( error, graceful = false ) => {
 	}
 };
 
+/**
+ * @function logToConsole Log a message to the console.
+ * @param {string} data The message to log.
+ * @param {string} type (optional) The type of message to log.
+ */
 const logToConsole = ( data, type = 'log' ) => {
 	if ( type === 'table' ) {
 		// Disable reason: We allow table to console for explicit logging scenarios.
