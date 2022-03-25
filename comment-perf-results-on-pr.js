@@ -20,7 +20,7 @@
 	const PR_ID = getPullRequestID();
 
 	const octokit = new Octokit( { auth: AUTH_TOKEN } );
-	const EXISTING_COMMENT_ID = '';
+	let EXISTING_COMMENT_ID = '';
 
 	/**
 	 * @function checkConstants - Check the required constants before continuing.
@@ -126,7 +126,7 @@
 
 	checkConstants();
 	await authorizeUser();
-	await getCommentData( 'Performance Test Results' );
+	EXISTING_COMMENT_ID = await getCommentData( 'Performance Test Results' );
 	await commentOnPR();
 } )();
 

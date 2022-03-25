@@ -1,3 +1,4 @@
+// use-strict;
 const { Octokit } = require( '@octokit/core' );
 const { createWriteStream } = require( 'fs' );
 const { constants } = require( 'fs' );
@@ -13,6 +14,11 @@ const AUTH_TOKEN = process.env.GH_AUTH_TOKEN;
 const fetch = ( ...args ) => import( 'node-fetch' ).then( ( { default: asyncFetch } ) => asyncFetch( ...args ) );
 const octokit = new Octokit( { auth: AUTH_TOKEN } );
 
+// Colors
+const RED = '\x1b[31m';
+const GREEN = '\x1b[32m';
+const RESET = '\x1b[0m';
+
 /**
  * @function download File downloader.
  * @param {string} url  The URL to download.
@@ -22,6 +28,7 @@ const download = async ( url, path ) => {
 	const streamPipeline = promisify( pipeline );
 	const response = await fetch( url, {
 		headers: {
+			// Needed to prevent 403 errors.
 			'user-agent': 'Mozilla/5.0 Chrome/96 Safari/537',
 		},
 	} );
@@ -100,17 +107,13 @@ const logToConsole = ( data, type = 'log' ) => {
  * @return {string} The pull request ID.
  */
 const getPullRequestID = () => {
-	// Colors
-	const GREEN = '\x1b[32m';
-	const RESET = '\x1b[0m';
-
 	let url = process.env.CIRCLE_PULL_REQUEST;
 	url = url.replace( /\/$/, '' );
 	const pullRequestID = url.substring( url.lastIndexOf( '/' ) + 1 );
 	if ( null === pullRequestID ) {
 		return null;
 	}
-	logToConsole( `${ GREEN }Success:${ RESET } Pull Request ID: ${ pullRequestID }` );
+	greenLogMessage( `Pull Request ID: ${ pullRequestID }` );
 	return pullRequestID;
 };
 
@@ -129,7 +132,7 @@ const getCommentData = async ( searchString ) => {
 	const PR_ID = getPullRequestID();
 	const { data, status } = await octokit.request( `GET /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments` );
 	if ( 200 !== status || null === data ) {
-		logToConsole( `${ RED }Error:${ RESET } Unable to get comment data` );
+		redLogMessage( 'Unable to get comment data' );
 		return '';
 	}
 
@@ -141,16 +144,11 @@ const getCommentData = async ( searchString ) => {
 	} );
 
 	if ( ! existingCommentData ) {
-		logToConsole( `${ RED }Error:${ RESET } Unable to find existing comment.` );
+		redLogMessage( 'Unable to find existing comment.' );
 		return '';
 	}
 	return existingCommentData.id;
 };
-
-// Colors
-const RED = '\x1b[31m';
-const GREEN = '\x1b[32m';
-const RESET = '\x1b[0m';
 
 /**
  * Example usage: greenLogMessage( 'Success:', 'Pull Request ID: 756' );
@@ -160,7 +158,8 @@ const RESET = '\x1b[0m';
  * @param {*} coloredText Optional - Default is 'Success:'.
  *
  */
-const greenLogMessage = ( text, coloredText = 'Success:' ) => logToConsole( `${ GREEN }${ coloredText }${ RESET } ${ text }` );
+const greenLogMessage = ( text, coloredText = 'Success:' ) =>
+	logToConsole( `${ GREEN }${ coloredText }${ RESET } ${ text }` );
 
 /**
  * Example usage: greenLogMessage( 'Error:', 'Unable to update existing comment.' );
@@ -170,7 +169,8 @@ const greenLogMessage = ( text, coloredText = 'Success:' ) => logToConsole( `${ 
  * @param {*} coloredText Optional - Default is 'Error:'.
  *
  */
-const redLogMessage = ( text, coloredText = 'Error:' ) => logToConsole( `${ RED }${ coloredText }${ RESET } ${ text }` );
+const redLogMessage = ( text, coloredText = 'Error:' ) =>
+	logToConsole( `${ RED }${ coloredText }${ RESET } ${ text }` );
 
 module.exports = {
 	doesFileExist,
