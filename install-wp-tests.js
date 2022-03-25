@@ -38,14 +38,10 @@
 		await fs.mkdir( wpCoreDir, { recursive: true } );
 
 		if ( wpVersion === 'nightly' || wpVersion === 'trunk' ) {
-			try {
-				await fs.mkdir( `${ tmpDir }/wordpress-nightly`, { recursive: true } );
-				await download( 'https://wordpress.org/nightly-builds/wordpress-latest.zip', `${ tmpDir }/wordpress-nightly.zip` );
-				await unzip( `${ tmpDir }/wordpress-nightly.zip`, `${ tmpDir }/` );
-				await fs.rename( `${ tmpDir }/wordpress-nightly/`, wpCoreDir );
-			} catch ( coreDownloadError ) {
-				handleError( new Error( `Core download failure occurred: ${ coreDownloadError }` ) );
-			}
+			await fs.mkdir( `${ tmpDir }/wordpress-nightly`, { recursive: true } );
+			await download( 'https://wordpress.org/nightly-builds/wordpress-latest.zip', `${ tmpDir }/wordpress-nightly.zip` );
+			await unzip( `${ tmpDir }/wordpress-nightly.zip`, `${ tmpDir }/` );
+			await fs.rename( `${ tmpDir }/wordpress-nightly/`, wpCoreDir );
 			return;
 		}
 

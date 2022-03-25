@@ -57,14 +57,10 @@ const unzip = async ( file, path ) => {
  */
 const doesFileExist = async ( path ) => {
 	const pathWithoutTrailingSlash = path.replace( /\/$/, '' );
-	try {
-		// Access has no return value of file exists.
-		// Catch error if occurs otherwise the file exists.
-		await fs.access( pathWithoutTrailingSlash, constants.F_OK );
-		return true;
-	} catch ( err ) {
-		return false;
-	}
+	// Access has no return value if file exists.
+	// Catch error if occurs otherwise the file exists.
+	const fileCheck = await fs.access( pathWithoutTrailingSlash, constants.F_OK ).catch( () => false );
+	return fileCheck ?? true;
 };
 
 /**
