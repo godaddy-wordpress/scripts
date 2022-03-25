@@ -19,7 +19,7 @@
 
 	const fs = require( 'fs' ).promises;
 	const os = require( 'os' );
-	const { download, unzip, doesFileExist, handleError } = require( './utils' );
+	const { download, unzip, doesFileExist, handleError, logToConsole, greenLogMessage } = require( './utils' );
 	const tmpDir = await doesFileExist( '/tmp' ) ? '/tmp' : await fs.mkdtemp( os.tmpdir() );
 
 	const wpTestsDir = `${ tmpDir }/wordpress-tests-lib`;
@@ -182,4 +182,5 @@
 	await installWordPress();
 	await installTestSuite();
 	await installDatabase();
+	greenLogMessage( 'WordPress test suite installed.' );
 } )();

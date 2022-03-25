@@ -1,3 +1,4 @@
+const { Octokit } = require( '@octokit/core' );
 const { createWriteStream } = require( 'fs' );
 const { constants } = require( 'fs' );
 const { pipeline } = require( 'stream' );
@@ -5,9 +6,12 @@ const { promisify } = require( 'util' );
 const AdmZip = require( 'adm-zip' );
 const fs = require( 'fs' ).promises;
 
+const AUTH_TOKEN = process.env.GH_AUTH_TOKEN;
+
 // Disable reason: Not sure why this is unsupported because Node 17 should support es.
 // eslint-disable-next-line node/no-unsupported-features/es-syntax
 const fetch = ( ...args ) => import( 'node-fetch' ).then( ( { default: asyncFetch } ) => asyncFetch( ...args ) );
+const octokit = new Octokit( { auth: AUTH_TOKEN } );
 
 /**
  * @function download File downloader.
@@ -52,7 +56,6 @@ const doesFileExist = async ( path ) => {
 		await fs.access( pathWithoutTrailingSlash, constants.F_OK );
 		return true;
 	} catch ( err ) {
-		handleError( err );
 		return false;
 	}
 };
@@ -111,9 +114,72 @@ const getPullRequestID = () => {
 	return pullRequestID;
 };
 
-exports.download = download;
-exports.unzip = unzip;
-exports.doesFileExist = doesFileExist;
-exports.handleError = handleError;
-exports.logToConsole = logToConsole;
-exports.getPullRequestID = getPullRequestID;
+/**
+ * Loop through comment.data and find the comment with .user.login that matches `godaddy-wordpress-bot`
+ * and .body including `searchString`.
+ * Save the ID of the matching comment to a scoped variable if exists.
+ *
+ * @async
+ * @param {string} searchString - The string to search for in the body.
+ * @function getCommentData - Get the comment data from the PR and set a variable to reference existing comment.
+ * @return {string} The comment ID || ''.
+ */
+const getCommentData = async ( searchString ) => {
+	// eg: https://github.com/godaddy-wordpress/go/pull/756
+	const PR_ID = getPullRequestID();
+	const { data, status } = await octokit.request( `GET /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments` );
+	if ( 200 !== status || null === data ) {
+		logToConsole( `${ RED }Error:${ RESET } Unable to get comment data` );
+		return '';
+	}
+
+	const existingCommentData = data.find( ( comment ) => {
+		return (
+			comment.user.login === 'godaddy-wordpress-bot' &&
+			comment.body.includes( searchString )
+		);
+	} );
+
+	if ( ! existingCommentData ) {
+		logToConsole( `${ RED }Error:${ RESET } Unable to find existing comment.` );
+		return '';
+	}
+	return existingCommentData.id;
+};
+
+// Colors
+const RED = '\x1b[31m';
+const GREEN = '\x1b[32m';
+const RESET = '\x1b[0m';
+
+/**
+ * Example usage: greenLogMessage( 'Success:', 'Pull Request ID: 756' );
+ *
+ * @function greenLogMessage Log a message to the console in green.
+ * @param {*} text        Text to will be uncolored.
+ * @param {*} coloredText Optional - Default is 'Success:'.
+ *
+ */
+const greenLogMessage = ( text, coloredText = 'Success:' ) => logToConsole( `${ GREEN }${ coloredText }${ RESET } ${ text }` );
+
+/**
+ * Example usage: greenLogMessage( 'Error:', 'Unable to update existing comment.' );
+ *
+ * @function redLogMessage Log a message to the console in green.
+ * @param {*} text        Text to will be uncolored.
+ * @param {*} coloredText Optional - Default is 'Error:'.
+ *
+ */
+const redLogMessage = ( text, coloredText = 'Error:' ) => logToConsole( `${ RED }${ coloredText }${ RESET } ${ text }` );
+
+module.exports = {
+	doesFileExist,
+	download,
+	getCommentData,
+	getPullRequestID,
+	greenLogMessage,
+	handleError,
+	logToConsole,
+	redLogMessage,
+	unzip,
+};
