@@ -4,6 +4,7 @@ const { createWriteStream } = require( 'fs' );
 const { constants } = require( 'fs' );
 const { pipeline } = require( 'stream' );
 const { promisify } = require( 'util' );
+const path = require( 'path' );
 const AdmZip = require( 'adm-zip' );
 const fs = require( 'fs' ).promises;
 
@@ -21,10 +22,11 @@ const RESET = '\x1b[0m';
 
 /**
  * @function download File downloader.
- * @param {string} url  The URL to download.
- * @param {string} path The path to save the file to.
+ * @param {string} url      The URL to download.
+ * @param          filePath
+ * @param {string} path     The path to save the file to.
  */
-const download = async ( url, path ) => {
+const download = async ( url, filePath ) => {
 	const streamPipeline = promisify( pipeline );
 	const response = await fetch( url, {
 		headers: {
@@ -37,26 +39,33 @@ const download = async ( url, path ) => {
 		throw new Error( `unexpected response ${ response.statusText }` );
 	}
 
-	await streamPipeline( response.body, createWriteStream( path ) );
+	const checkPath = path.dirname( filePath );
+	const pathExists = await doesFileExist( checkPath );
+
+	if ( ! pathExists ) {
+		await fs.mkdir( checkPath, { recursive: true } );
+	}
+
+	await streamPipeline( response.body, createWriteStream( filePath ) );
 };
 
 /**
  * @function unzip Extract a zip file to a destination.
  * @param {*}      file
- * @param {string} path
+ * @param {string} filePath
  */
-const unzip = async ( file, path ) => {
+const unzip = async ( file, filePath ) => {
 	const zip = new AdmZip( file );
-	zip.extractAllTo( path, true );
+	zip.extractAllTo( filePath, true );
 };
 
 /**
  * @function doesFileExist Async check if a inode exists and handle error messages.
- * @param {path} path Path to the inode to check
+ * @param {path} filePath Path to the inode to check
  * @return {boolean} True if the folder exists false otherwise.
  */
-const doesFileExist = async ( path ) => {
-	const pathWithoutTrailingSlash = path.replace( /\/$/, '' );
+const doesFileExist = async ( filePath ) => {
+	const pathWithoutTrailingSlash = filePath.replace( /\/$/, '' );
 	// Access has no return value if file exists.
 	// Catch error if occurs otherwise the file exists.
 	const fileCheck = await fs.access( pathWithoutTrailingSlash, constants.F_OK ).catch( () => false );

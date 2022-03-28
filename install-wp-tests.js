@@ -23,7 +23,7 @@
 	const tmpDir = await doesFileExist( '/tmp' ) ? '/tmp' : await fs.mkdtemp( os.tmpdir() );
 
 	const wpTestsDir = `${ tmpDir }/wordpress-tests-lib`;
-	const wpCoreDir = `${ tmpDir }/wordpress/`;
+	const wpCoreDir = `${ tmpDir }/wordpress`;
 
 	/**
 	 * @async
@@ -46,7 +46,7 @@
 		}
 
 		await download( `https://wordpress.org/${ archiveName }.zip`, `${ tmpDir }/wordpress.zip` );
-		await unzip( `${ tmpDir }/wordpress.zip`, wpCoreDir );
+		await unzip( `${ tmpDir }/wordpress.zip`, tmpDir );
 
 		await download( 'https://raw.github.com/markoheijnen/wp-mysqli/master/db.php', `${ wpCoreDir }/wp-content/db.php` );
 	};
