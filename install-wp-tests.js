@@ -46,7 +46,9 @@
 		}
 
 		await download( `https://wordpress.org/${ archiveName }.zip`, `${ tmpDir }/wordpress.zip` );
-		await unzip( `${ tmpDir }/wordpress.zip`, `${ tmpDir }/` );
+		await unzip( `${ tmpDir }/wordpress.zip`, wpCoreDir );
+
+		await download( 'https://raw.github.com/markoheijnen/wp-mysqli/master/db.php', `${ wpCoreDir }/wp-content/db.php` );
 	};
 
 	/**
