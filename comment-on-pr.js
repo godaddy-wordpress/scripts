@@ -58,11 +58,11 @@
 	/**
 	 * Patch the comment on the PR. Return true if the patch was successful and false if it failed.
 	 * Function should depend on `EXISTING_COMMENT_ID` being set return false otherwise.
-	 * Parameter buildJobArtifactURL should be used to PATCH the existing comment.
+	 * Parameter artifactURL should be used to PATCH the existing comment.
 	 *
 	 * @async
 	 * @function updateExistingComment - Update an existing comment.
-	 * @param {string} artifactURL - The buildJobArtifactURL to be posted.
+	 * @param {string} artifactURL - The URL to the artifact.
 	 * @return {boolean} - True if successful.
 	 */
 	const updateExistingComment = async ( artifactURL ) => {
