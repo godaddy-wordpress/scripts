@@ -58,21 +58,21 @@
 	/**
 	 * Patch the comment on the PR. Return true if the patch was successful and false if it failed.
 	 * Function should depend on `EXISTING_COMMENT_ID` being set return false otherwise.
-	 * Parameter buildJobArtifactURL should be used to PATCH the existing comment.
+	 * Parameter artifactURL should be used to PATCH the existing comment.
 	 *
 	 * @async
 	 * @function updateExistingComment - Update an existing comment.
-	 * @param {string} buildURI - The buildJobArtifactURL to be posted.
+	 * @param {string} artifactURL - The URL to the artifact.
 	 * @return {boolean} - True if successful.
 	 */
-	const updateExistingComment = async ( buildURI ) => {
+	const updateExistingComment = async ( artifactURL ) => {
 		if ( ! EXISTING_COMMENT_ID ) {
 			redLogMessage( 'Unable to update existing comment.' );
 			return false;
 		}
 
 		const { data, status } = await octokit.request( `PATCH /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/comments/${ EXISTING_COMMENT_ID }`, {
-			body: 'Download go.zip: ' + buildURI,
+			body: `Download ${ process.env.CIRCLE_PROJECT_REPONAME }.zip: ${ artifactURL }`,
 		} );
 
 		if ( 200 !== status || null === data ) {
@@ -96,7 +96,7 @@
 
 		// Create a new comment with a link to the attachment
 		const comment = await octokit.request( `POST /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments`, {
-			body: `Download go.zip: ${ buildJobArtifactURL }`,
+			body: `Download ${ process.env.CIRCLE_PROJECT_REPONAME }.zip: ${ buildJobArtifactURL }`,
 		} );
 		if ( 201 !== comment.status ) {
 			redLogMessage( 'Comment could not be created.' );
