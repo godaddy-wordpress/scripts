@@ -72,7 +72,7 @@
 		}
 
 		const { data, status } = await octokit.request( `PATCH /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/comments/${ EXISTING_COMMENT_ID }`, {
-			body: 'Download go.zip: ' + buildURI,
+			body: `Download ${ process.env.CIRCLE_PROJECT_REPONAME }.zip: ${ buildURI }`,
 		} );
 
 		if ( 200 !== status || null === data ) {
@@ -96,7 +96,7 @@
 
 		// Create a new comment with a link to the attachment
 		const comment = await octokit.request( `POST /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/${ PR_ID }/comments`, {
-			body: `Download go.zip: ${ buildJobArtifactURL }`,
+			body: `Download ${ process.env.CIRCLE_PROJECT_REPONAME }.zip: ${ buildJobArtifactURL }`,
 		} );
 		if ( 201 !== comment.status ) {
 			redLogMessage( 'Comment could not be created.' );
