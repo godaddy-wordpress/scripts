@@ -62,17 +62,17 @@
 	 *
 	 * @async
 	 * @function updateExistingComment - Update an existing comment.
-	 * @param {string} buildURI - The buildJobArtifactURL to be posted.
+	 * @param {string} artifactURL - The buildJobArtifactURL to be posted.
 	 * @return {boolean} - True if successful.
 	 */
-	const updateExistingComment = async ( buildURI ) => {
+	const updateExistingComment = async ( artifactURL ) => {
 		if ( ! EXISTING_COMMENT_ID ) {
 			redLogMessage( 'Unable to update existing comment.' );
 			return false;
 		}
 
 		const { data, status } = await octokit.request( `PATCH /repos/${ process.env.CIRCLE_PROJECT_USERNAME }/${ process.env.CIRCLE_PROJECT_REPONAME }/issues/comments/${ EXISTING_COMMENT_ID }`, {
-			body: `Download ${ process.env.CIRCLE_PROJECT_REPONAME }.zip: ${ buildURI }`,
+			body: `Download ${ process.env.CIRCLE_PROJECT_REPONAME }.zip: ${ artifactURL }`,
 		} );
 
 		if ( 200 !== status || null === data ) {
